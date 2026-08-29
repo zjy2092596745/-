@@ -2,12 +2,12 @@ name: Update MiGu EPL playlist
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
   push:
     paths:
-      - "iptv/update_migu_epl.py"
-      - ".github/workflows/update-migu-epl.yml"
-  schedule:
-    - cron: "17 * * * *"
+      - 'iptv/update_migu_epl.py'
+      - '.github/workflows/update-migu-epl.yml'
 
 permissions:
   contents: write
@@ -19,8 +19,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Generate EPL playlist
-        run: python3 iptv/update_migu_epl.py
+        run: python iptv/update_migu_epl.py
 
       - name: Commit updated playlist
         run: |
@@ -28,8 +33,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add iptv/migu-epl.m3u
           if git diff --cached --quiet; then
-            echo "No playlist changes"
-            exit 0
+            echo "No changes"
+          else
+            git commit -m "Auto-update MiGu EPL playlist"
+            git push
           fi
-          git commit -m "Update MiGu EPL playlist"
-          git push
